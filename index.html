@@ -3,33 +3,39 @@
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <!-- PokeAPI用のFetch API -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
   <center>
     <h1 id="start" class="text">Enterキーでスタート</h1>
     <h2 id="score">スコア: 0</h2>
     <h2 id="time">残り時間: 30秒</h2>
+    <div id="pokemonContainer">
+      <img id="pokemonImage" src="" alt="ポケモン画像" style="max-width: 200px;">
+      <h3 id="pokemonName">ポケモン名</h3>
+    </div>
     <div id="ranking"><h2>ランキング</h2><ol id="rankList"></ol></div>
   </center>
 
 <script>
   // ▼▼▼ Firebase 初期化 ▼▼▼（※自分の値に変更してください）
   const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_PROJECT_ID.appspot.com",
-    messagingSenderId: "YOUR_SENDER_ID",
-    appId: "YOUR_APP_ID"
+    apiKey: "AIzaSyAwEXEnTKrMnRg6GCHqQYJW20onr5Ug3rM",
+    authDomain: "lets-go-to-school-login.firebaseapp.com",
+    databaseURL: "https://lets-go-to-school-login-default-rtdb.firebaseio.com",
+    projectId: "lets-go-to-school-login",
+    storageBucket: "lets-go-to-school-login.appspot.com",
+    messagingSenderId: "781949835802",
+    appId: "1:781949835802:web:75f568ae3454e623bf8fa3",
+    measurementId: "G-MHMHLRSE3C"
   };
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
   // ▲▲▲ Firebase 初期化ここまで ▲▲▲
 
-  let Q = ["apple", "banana", "melon", "mango", "strawberry", "blueberry", "orange"];
-  let Q_No = Math.floor(Math.random() * Q.length);
-  let Q_i = 0;
-  let Q_l = Q[Q_No].length;
+  let pokemonName = "";
+  let pokemonId = 0;
   let score = 0;
   let time = 30;
   let timerId = null;
@@ -41,13 +47,12 @@
     isPlaying = true;
     score = 0;
     time = 30;
-    Q_No = Math.floor(Math.random() * Q.length);
-    Q_i = 0;
-    Q_l = Q[Q_No].length;
-    document.getElementById("start").innerHTML = Q[Q_No];
     document.getElementById("score").innerHTML = "スコア: " + score;
     document.getElementById("time").innerHTML = "残り時間: " + time + "秒";
     document.body.style.backgroundColor = "white";
+    
+    // ポケモンデータを取得
+    getPokemonData();
 
     timerId = setInterval(updateTimer, 1000);
   }
@@ -61,6 +66,21 @@
       document.getElementById("start").innerHTML = "終了！Enterキーで再スタート";
       sendScore(); // スコア送信
     }
+  }
+
+  function getPokemonData() {
+    // ポケモンのIDをランダムに選択（1から898までのID）
+    pokemonId = Math.floor(Math.random() * 898) + 1;
+
+    // PokeAPIからポケモンデータを取得
+    $.get(`https://pokeapi.co/api/v2/pokemon/${pokemonId}/`, function(data) {
+      pokemonName = data.name;
+      const pokemonImageUrl = data.sprites.front_default;
+
+      // ポケモン名と画像を表示
+      document.getElementById("pokemonName").innerText = pokemonName.charAt(0).toUpperCase() + pokemonName.slice(1);
+      document.getElementById("pokemonImage").src = pokemonImageUrl;
+    });
   }
 
   function sendScore() {
@@ -105,19 +125,13 @@
 
     let keyCode = event.key;
 
-    if (Q[Q_No].charAt(Q_i).toLowerCase() == keyCode.toLowerCase()) {
+    if (pokemonName.charAt(0).toLowerCase() == keyCode.toLowerCase()) {
       document.body.style.backgroundColor = "white";
-      Q_i++;
-      document.getElementById("start").innerHTML = Q[Q_No].substring(Q_i, Q_l);
+      score++;
+      document.getElementById("score").innerHTML = "スコア: " + score;
 
-      if (Q_i === Q_l) {
-        score++;
-        document.getElementById("score").innerHTML = "スコア: " + score;
-        Q_No = Math.floor(Math.random() * Q.length);
-        Q_i = 0;
-        Q_l = Q[Q_No].length;
-        document.getElementById("start").innerHTML = Q[Q_No];
-      }
+      // 次のポケモンデータを表示
+      getPokemonData();
     } else {
       document.body.style.backgroundColor = "red";
     }
