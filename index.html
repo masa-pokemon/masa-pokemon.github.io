@@ -1,144 +1,96 @@
+<!doctype html>
 <html>
 <head>
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
-  <!-- PokeAPI用のFetch API -->
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-</head>
-<body>
-  <center>
-    <h1 id="start" class="text">Enterキーでスタート</h1>
-    <h2 id="score">スコア: 0</h2>
-    <h2 id="time">残り時間: 30秒</h2>
-    <div id="pokemonContainer">
-      <img id="pokemonImage" src="" alt="ポケモン画像" style="max-width: 200px;">
-      <h3 id="pokemonName">ポケモン名</h3>
-    </div>
-    <div id="ranking"><h2>ランキング</h2><ol id="rankList"></ol></div>
-  </center>
+<meta charset="utf-8">
+<title>寿司打 - Play </title>
+<link rel="icon" href="https://sushida.net/img/favicon.ico">
+<link href="css/play.css?02062" rel="stylesheet" type="text/css">
 
+<link href="css/style_menu.css?0206" rel="stylesheet" type="text/css">
+<script type="text/javascript" src="js/parts.js?0206"></script>
+
+<link rel="stylesheet" href="TemplateData/style.css">
+<script src="TemplateData/UnityProgress.js"></script>
+<script src="files/v1_3/UnityLoader.js?1126"></script>
 <script>
-  // ▼▼▼ Firebase 初期化 ▼▼▼（※自分の値に変更してください）
-  const firebaseConfig = {
-    apiKey: "AIzaSyAwEXEnTKrMnRg6GCHqQYJW20onr5Ug3rM",
-    authDomain: "lets-go-to-school-login.firebaseapp.com",
-    databaseURL: "https://lets-go-to-school-login-default-rtdb.firebaseio.com",
-    projectId: "lets-go-to-school-login",
-    storageBucket: "lets-go-to-school-login.appspot.com",
-    messagingSenderId: "781949835802",
-    appId: "1:781949835802:web:75f568ae3454e623bf8fa3",
-    measurementId: "G-MHMHLRSE3C"
-  };
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
-  // ▲▲▲ Firebase 初期化ここまで ▲▲▲
-
-  let pokemonName = "";
-  let pokemonId = 0;
-  let score = 0;
-  let time = 30;
-  let timerId = null;
-  let isPlaying = false;
-
-  function startGame() {
-    if (isPlaying) return;
-
-    isPlaying = true;
-    score = 0;
-    time = 30;
-    document.getElementById("score").innerHTML = "スコア: " + score;
-    document.getElementById("time").innerHTML = "残り時間: " + time + "秒";
-    document.body.style.backgroundColor = "white";
-    
-    // ポケモンデータを取得
-    getPokemonData();
-
-    timerId = setInterval(updateTimer, 1000);
-  }
-
-  function updateTimer() {
-    time--;
-    document.getElementById("time").innerHTML = "残り時間: " + time + "秒";
-    if (time <= 0) {
-      clearInterval(timerId);
-      isPlaying = false;
-      document.getElementById("start").innerHTML = "終了！Enterキーで再スタート";
-      sendScore(); // スコア送信
-    }
-  }
-
-  function getPokemonData() {
-    // ポケモンのIDをランダムに選択（1から898までのID）
-    pokemonId = Math.floor(Math.random() * 898) + 1;
-
-    // PokeAPIからポケモンデータを取得
-    $.get(`https://pokeapi.co/api/v2/pokemon/${pokemonId}/`, function(data) {
-      pokemonName = data.name;
-      const pokemonImageUrl = data.sprites.front_default;
-
-      // ポケモン名と画像を表示
-      document.getElementById("pokemonName").innerText = pokemonName.charAt(0).toUpperCase() + pokemonName.slice(1);
-      document.getElementById("pokemonImage").src = pokemonImageUrl;
-    });
-  }
-
-  function sendScore() {
-    let name = prompt("名前を入力してください（ニックネーム可）:");
-    if (!name) return;
-
-    db.collection("scores").add({
-      name: name,
-      score: score,
-      timestamp: firebase.firestore.FieldValue.serverTimestamp()
-    }).then(() => {
-      console.log("スコア送信完了");
-      loadRanking();
-    }).catch((error) => {
-      console.error("スコア送信エラー: ", error);
-    });
-  }
-
-  function loadRanking() {
-    db.collection("scores")
-      .orderBy("score", "desc")
-      .limit(5)
-      .get()
-      .then((querySnapshot) => {
-        let rankList = document.getElementById("rankList");
-        rankList.innerHTML = "";
-        querySnapshot.forEach((doc) => {
-          let data = doc.data();
-          let li = document.createElement("li");
-          li.textContent = `${data.name}: ${data.score}`;
-          rankList.appendChild(li);
-        });
-      });
-  }
-
-  window.addEventListener("keydown", function(event) {
-    if (!isPlaying && event.key === "Enter") {
-      startGame();
-      return;
-    }
-    if (!isPlaying) return;
-
-    let keyCode = event.key;
-
-    if (pokemonName.charAt(0).toLowerCase() == keyCode.toLowerCase()) {
-      document.body.style.backgroundColor = "white";
-      score++;
-      document.getElementById("score").innerHTML = "スコア: " + score;
-
-      // 次のポケモンデータを表示
-      getPokemonData();
-    } else {
-      document.body.style.backgroundColor = "red";
-    }
-  });
-
-  // 初回読み込み時にランキング表示
-  loadRanking();
+	function game() {
+      var gameInstance = UnityLoader.instantiate("gameContainer", "files/v1_3/Web.json", {onProgress: UnityProgress});
+	  document.getElementsByTagName('canvas')[0].ondragstart = function() { return false; };
+	}
 </script>
+</head>
+
+<body onload="game()">
+<div id="header"></div>
+<script>header_f();</script>
+<div id="contents">
+  <div id="main">
+    <div id="game">
+    	<div class="webgl-content">
+      		<div id="gameContainer" style="width: 500px; height: 420px; color:#555;"></div>
+		</div>
+    </div>
+    <div class="ex"><a href="https://sushida.net/"><img src="img/b_top_back.gif" width="104" height="22" alt=""/></a>
+  	</div>
+  	<div class="ad_728">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5774279613524055"
+     crossorigin="anonymous"></script>
+<!-- sushida_728x90 -->
+<ins class="adsbygoogle"
+     style="display:inline-block;width:728px;height:90px"
+     data-ad-client="ca-pub-5774279613524055"
+     data-ad-slot="4383492286"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+  	</div>
+  	<div class="info_l"> 【<a href="https://keyx0.net" target="_top">Neutralの他のタイピングゲーム</a>はこちら▼】<br>
+  		<table border="0" cellpadding="0" cellspacing="20" style="margin: 0px auto">
+  			<tbody>
+  				<tr>
+  					<td><a href="https://keyx0.net/pop/"><img src="img/link_l/tp_pop.png" alt="Popタイピング" width="160" height="102" title="Popタイピング"/></a></td>
+  					<td><a href="https://keyx0.net/osakana/"><img src="img/link_l/tp_osakana.png" alt="お魚タイピング" width="160" height="102" title="お魚タイピング"/></a></td>
+  					<td><a href="https://keyx0.net/az/"><img src="img/link_l/tp_az.png" alt="A-Zタイピング" width="160" height="102" title="A-Zタイピング"/></a></td>
+  					</tr>
+  				<tr>
+  					<td><a href="https://keyx0.net/easy/"><img src="img/link_l/tp_easy.png" alt="Easyタイピング" width="160" height="102" title="Easyタイピング"/></a></td>
+  					<td><a href="https://keyx0.net/map/"><img src="img/link_l/tp_map.png" alt="県名当てタイピング" width="160" height="102" title="県名当てタイピング"/></a></td>
+  					<td><a href="https://keyx0.net/map_c/"><img src="img/link_l/tp_map_c.png" alt="県庁所在地当てタイピング" width="160" height="102" title="県庁所在地当てタイピング"/></a></td>
+  					</tr>
+  				</tbody>
+  			</table>
+  	</div>
+  	<div class="info">
+【お知らせ】<br>
+★寿司打のURLが <a href="https://sushida.net">https://sushida.net</a> になりました。<br>
+<p style="background-color:#333; margin: 16px 0px;padding: 16px 24px; border-radius: 6px">
+	※ゲームをプレイするにはWebGL対応のブラウザが必要になります。<br>
+現在ご利用のブラウザで動作しない場合は、<a href="https://www.google.com/intl/ja_ALL/chrome/" target="_blank">Google Chrome</a>、<a href="https://www.mozilla.org/ja/firefox/" target="_blank">Firefox</a>、<a href="https://www.microsoft.com/ja-jp/windows/microsoft-edge" target="_blank">Microsoft Edge</a>等の最新版をお試しください。</p>
+<p>★ローマ字表示のON/OFFは、タイトル下の「設定」ボタンから行えます。</p>
+<br>
+<p>★ゲーム中にキーボードで入力ができなくなってしまった場合は、マウスでゲーム画面を一度クリックしてみてください。</p>
+<br>
+<p>・このサイトは<a href="https://neutralx0.net">Neutral</a>が運営しています。不具合やお気づきの点などございましたら<a href="http://info.neutralx0.com/" target="_blank">こちら</a>からご連絡いただければ幸いです。 </p><br>
+  	</div>
+  	<div class="info_l"> 【<a href="https://neutralx0.net/tools/">Neutralの便利ツール</a>はこちら▼】
+<table border="0" cellpadding="0" cellspacing="20" style="margin: 10px auto">
+  			<tbody>
+  				<tr>
+  					<td><a href="https://neutralx0.net/tools/dot3/"><img src="img/link_l/tool_minidot3.png" alt="ミニドット絵メーカー３" width="160" height="102" title="ミニドット絵メーカー３"/></a></td>
+  					<td><a href="https://neutralx0.net/tools/memo/"><img src="img/link_l/tool_memo.png" alt="卓上手書きメモ" width="160" height="102" title="卓上手書きメモ"/></a></td>
+  					<td><a href="https://neutralx0.net/tools/line/"><img src="img/link_l/tool_line.png" alt="集中線追加ツール" width="160" height="102" title="集中線追加ツール"/></a></td>
+  					</tr>
+  				<tr>
+  					<td><a href="https://neutralx0.net/tools/cat_icon/"><img src="img/link_l/tool_cat.png" alt="化け猫アイコンメーカー" width="160" height="102" title="化け猫アイコンメーカー"/></a></td>
+  					<td><a href="https://neutralx0.net/tools/resize_img/"><img src="img/link_l/tool_resize.png" alt="画像サイズ変更ツール" width="160" height="102" title="画像サイズ変更ツール"/></a></td>
+  					<td><a href="https://neutralx0.net/tools/symmetry/"><img src="img/link_l/tool_symmetry.png" alt="対称落書きツール" width="160" height="102" title="対称落書きツール"/></a></td>
+  					</tr>
+  				</tbody>
+  			</table>
+  		</div>
+  </div>
+</div>
+<div id="footer"></div>
+<script>footer_f();</script>
 </body>
 </html>
